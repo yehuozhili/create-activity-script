@@ -50,3 +50,35 @@ export function deleteFolder(path: string) {
 		}
 	}
 }
+
+export function findHash(path: string) {
+	//查找app.hash.js // 如果没有此文件，则随便找个js，如果还没有，则不记录。
+	const innerFiles = fs.readdirSync(path);
+	const regExp = /^(?:.+?\.)(.+?)(?:\.js$)/;
+	const hashmap: Record<string, number> = {};
+	innerFiles.forEach((file) => {
+		if (file.includes("js")) {
+			// 优先看app
+			const res = regExp.exec(file);
+			if (res && res.length > 1) {
+				const hash = res[1];
+				if (hashmap[hash]) {
+					hashmap[hash] = hashmap[hash] + 1;
+				} else {
+					hashmap[hash] = 1;
+				}
+			}
+		}
+	});
+	//hashmap中最多的值
+	const final = Object.entries(hashmap).reduce(
+		(prev, next) => {
+			if (prev[1] <= next[1]) {
+				prev = next;
+			}
+			return prev;
+		},
+		["", 0]
+	);
+	return final;
+}
