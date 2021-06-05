@@ -124,21 +124,21 @@ async function run(root: string, projectName: string, option: string) {
 	);
 	fs.unlinkSync(path.join(root, "template.json"));
 
-	// 再次根据dependenciesToInstall执行npm install
-	const dependenciesToInstall = Object.entries({
-		...pkgJson.dependencies,
-		...pkgJson.devDependencies,
-	});
-	let newDependencies: string[] = [];
-	if (dependenciesToInstall.length) {
-		newDependencies = newDependencies.concat(
-			dependenciesToInstall.map(([dependency, version]) => {
-				return `${dependency}@${version}`;
-			})
-		);
-	}
-	await doAction(root, newDependencies);
-	console.log(`${chalk.cyan("Installing succeed!")}`);
+	// // 再次根据dependenciesToInstall执行npm install
+	// const dependenciesToInstall = Object.entries({
+	// 	...pkgJson.dependencies,
+	// 	...pkgJson.devDependencies,
+	// });
+	// let newDependencies: string[] = [];
+	// if (dependenciesToInstall.length) {
+	// 	newDependencies = newDependencies.concat(
+	// 		dependenciesToInstall.map(([dependency, version]) => {
+	// 			return `${dependency}@${version}`;
+	// 		})
+	// 	);
+	// }
+	// await doAction(root, newDependencies);
+	// console.log(`${chalk.cyan("Installing succeed!")}`);
 	await doAction(root, template, "uninstall");
 
 	console.log(`🎉  Successfully created project ${projectName}.`);
@@ -148,6 +148,8 @@ async function run(root: string, projectName: string, option: string) {
 	} else {
 		console.log(`${chalk.cyan(`cd ${projectName}`)}`);
 	}
-	console.log(`${chalk.cyan("$ npm run start")}`);
+	console.log(
+		`${chalk.cyan("you may need to install to start the project")}`
+	);
 	process.exit(0);
 }

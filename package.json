@@ -10,6 +10,10 @@
 	"bin": {
 		"create-activity-script": "./bin/www"
 	},
+	"files": [
+		"dist",
+		"bin"
+	],
 	"keywords": [],
 	"author": "",
 	"license": "ISC",

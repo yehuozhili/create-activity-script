@@ -1,5 +1,8 @@
 import spawn from "cross-spawn";
 import * as fs from "fs-extra";
+import * as path from "path";
+import { RecordMapItemType } from "./collect";
+import { recordFileDevKey, recordFileProdKey } from "./constant";
 /**
  * 使用npm安装或卸载项目依赖
  * @param {*} root 项目路径
@@ -27,8 +30,21 @@ export async function doAction(
 			root,
 		];
 		const child = spawn(command, args, { stdio: "inherit" });
-		child.on("close", resolve); // 安装成功后触发resolve
+		child.on("close", resolve);
 	});
+}
+
+export async function buildAction(root: string, script: string) {
+	return new Promise((resolve) => {
+		const command = "npm run ";
+		const args = [script, "--loglevel", "error"];
+		const child = spawn(command, args, { stdio: "inherit", cwd: root });
+		child.on("close", resolve);
+	});
+}
+
+export async function copyFolder(workPath: string, targetPath: string) {
+	return fs.copy(workPath, targetPath);
 }
 
 /**
@@ -81,4 +97,45 @@ export function findHash(path: string) {
 		["", 0]
 	);
 	return final;
+}
+
+export function getHashMap(root: string, devdir: string, proddir: string) {
+	const dirs = fs.readdirSync(root);
+	// 遍历所有文件夹，获取查到对应目录的dev/pkgname/
+	const recordMap: Record<string, RecordMapItemType> = {};
+	dirs.forEach((name) => {
+		//查找特定文件夹
+		const devPath = path.resolve(root, name, devdir, name);
+		const prodPath = path.resolve(root, name, proddir, name);
+
+		const existDev = fs.existsSync(devPath);
+		const existProd = fs.existsSync(prodPath);
+
+		const tmp: RecordMapItemType = {
+			[recordFileDevKey]: "",
+			[recordFileProdKey]: "",
+		};
+		if (!existDev) {
+			console.log(`${devPath} does not exist`);
+		} else {
+			const final = findHash(devPath);
+			if (final[1] !== 0) {
+				tmp[recordFileDevKey] = final[0];
+			}
+		}
+		if (!existProd) {
+			console.log(`${prodPath} does not exist`);
+		} else {
+			const final = findHash(devPath);
+			if (final[1] !== 0) {
+				tmp[recordFileProdKey] = final[0];
+			}
+		}
+		if (tmp[recordFileDevKey] === "" && tmp[recordFileProdKey] === "") {
+			//ignore
+		} else {
+			recordMap[name] = tmp;
+		}
+	});
+	return recordMap;
 }

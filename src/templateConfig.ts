@@ -1,9 +1,11 @@
+import { scriptDev, scriptProd } from "./constant";
+
 export const vueTemplateConfig = {
 	scripts: {
 		start: "vue-cli-service serve",
 		serve: "vue-cli-service serve",
-		"build-dev": "vue-cli-service build --mode development",
-		build: "vue-cli-service build",
+		[scriptDev]: "vue-cli-service build --mode development",
+		[scriptProd]: "vue-cli-service build",
 	},
 	eslintConfig: {
 		root: true,

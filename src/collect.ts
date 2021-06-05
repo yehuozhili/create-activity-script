@@ -2,17 +2,10 @@ import chalk from "chalk";
 import fs from "fs-extra";
 import inquirer from "inquirer";
 import * as path from "path";
-import {
-	recordFileDevKey,
-	recordFileName,
-	recordFileProdKey,
-} from "./constant";
-import { findHash } from "./utils";
+import { DevProdKey, recordFileName } from "./constant";
+import { getHashMap } from "./utils";
 
-export type RecordMapItemType = Record<
-	typeof recordFileDevKey | typeof recordFileProdKey,
-	string
->;
+export type RecordMapItemType = Record<DevProdKey, string>;
 
 export const collect = async (
 	base: string,
@@ -31,43 +24,8 @@ export const collect = async (
 		return;
 	}
 
-	const dirs = fs.readdirSync(root);
 	// 遍历所有文件夹，获取查到对应目录的dev/pkgname/
-	const recordMap: Record<string, RecordMapItemType> = {};
-	dirs.forEach((name) => {
-		//查找特定文件夹
-		const devPath = path.resolve(root, name, devdir, name);
-		const prodPath = path.resolve(root, name, proddir, name);
-
-		const existDev = fs.existsSync(devPath);
-		const existProd = fs.existsSync(prodPath);
-
-		const tmp: RecordMapItemType = {
-			[recordFileDevKey]: "",
-			[recordFileProdKey]: "",
-		};
-		if (!existDev) {
-			console.log(`${devPath} does not exist`);
-		} else {
-			const final = findHash(devPath);
-			if (final[1] !== 0) {
-				tmp[recordFileDevKey] = final[0];
-			}
-		}
-		if (!existProd) {
-			console.log(`${prodPath} does not exist`);
-		} else {
-			const final = findHash(devPath);
-			if (final[1] !== 0) {
-				tmp[recordFileProdKey] = final[0];
-			}
-		}
-		if (tmp[recordFileDevKey] === "" && tmp[recordFileProdKey] === "") {
-			//ignore
-		} else {
-			recordMap[name] = tmp;
-		}
-	});
+	const recordMap = getHashMap(root, devdir, proddir);
 
 	console.log(recordMap);
 	// 写入文件
