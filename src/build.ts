@@ -11,8 +11,10 @@ export const build = async (
 	devdir: string,
 	proddir: string,
 	output: string,
-	mode: DevProdKey
+	mode: DevProdKey,
+	ignore: string
 ) => {
+	console.time();
 	// 检测是否存在配置文件，不存在配置文件则询问是否全部打包
 	// 配置文件应该在output同级
 	let root = process.cwd();
@@ -40,17 +42,19 @@ export const build = async (
 	const jsonFileIsExist = fs.existsSync(jsonFile);
 	let json = {};
 	if (!jsonFileIsExist) {
-		const choices = ["y", "n"];
-		let sign = "y";
-		const result = await inquirer.prompt({
-			name: "sign",
-			type: "list",
-			message: `${jsonFile} doesn't  exists , continue ? will build all packages.`,
-			choices,
-		});
-		sign = result.sign;
-		if (sign === "n") {
-			return;
+		if (!ignore) {
+			const choices = ["y", "n"];
+			let sign = "y";
+			const result = await inquirer.prompt({
+				name: "sign",
+				type: "list",
+				message: `${jsonFile} doesn't  exists , continue ? will build all packages.`,
+				choices,
+			});
+			sign = result.sign;
+			if (sign === "n") {
+				return;
+			}
 		}
 	} else {
 		// 读取文件后放json
@@ -78,17 +82,19 @@ export const build = async (
 	);
 	console.log(`${chalk.green(solution[1])}`);
 	// 对比结果询问是否继续build
-	const choices = ["y", "n"];
-	let sign = "y";
-	const result = await inquirer.prompt({
-		name: "sign",
-		type: "list",
-		message: `continue?`,
-		choices,
-	});
-	sign = result.sign;
-	if (sign === "n") {
-		return;
+	if (!ignore) {
+		const choices = ["y", "n"];
+		let sign = "y";
+		const result = await inquirer.prompt({
+			name: "sign",
+			type: "list",
+			message: `continue?`,
+			choices,
+		});
+		sign = result.sign;
+		if (sign === "n") {
+			return;
+		}
 	}
 	// 先进行build，build完毕查找是否存在所需的目录，成功build则返回true否则false
 	const buildResult = await buildFile(solution, root, mode);
@@ -112,12 +118,13 @@ export const build = async (
 			}
 			// 收集新map
 			const nowJson = getHashMap(root, devdir, proddir);
-			fs.writeFileSync(jsonFile, JSON.stringify(nowJson, null, 2));
+			// 这里需要保留上次的另一个key,否则有bug
+			const resJson = genNewJson(mode, json, nowJson);
+
+			fs.writeFileSync(jsonFile, JSON.stringify(resJson, null, 2));
 			console.log(
 				`${chalk.green("update " + recordFileName + " successfully")}`
 			);
-		} else {
-			return;
 		}
 	} else {
 		console.log(
@@ -125,8 +132,38 @@ export const build = async (
 				"please check your package script can work correctly"
 			)}`
 		);
-		return;
 	}
+	console.timeEnd();
+};
+
+const genNewJson = (
+	mode: DevProdKey,
+	json: Record<string, RecordMapItemType>,
+	nowJson: Record<string, RecordMapItemType>
+) => {
+	const newJSON: Record<string, RecordMapItemType> = {};
+	const originKey = Object.keys(json);
+	if (mode === "dev") {
+		originKey.forEach((v) => {
+			newJSON[v] = {
+				dev: nowJson[v].dev,
+				prod: json[v].prod,
+			};
+		});
+	} else {
+		originKey.forEach((v) => {
+			newJSON[v] = {
+				dev: json[v].dev,
+				prod: nowJson[v].prod,
+			};
+		});
+	}
+	//json里没有的
+	const rest = Object.keys(nowJson).filter((v) => !originKey.includes(v));
+	rest.forEach((v) => {
+		newJSON[v] = nowJson[v];
+	});
+	return newJSON;
 };
 
 const copyFileToOutput = async (
@@ -139,14 +176,12 @@ const copyFileToOutput = async (
 ) => {
 	// 建立dist 文件夹
 	const distPath = path.resolve(outPath, "dist");
-	console.log(distPath);
 	// 这里不询问，没有就创建，有就直接复制，或者执行该脚本前用rimRaf删除dist
 	fs.ensureDirSync(distPath);
 	const modeDir = mode === "dev" ? devdir : proddir;
 	const promises: Promise<any>[] = [];
 	willCopy.forEach((v) => {
 		const workPath = path.resolve(root, v, modeDir, v);
-		console.log(workPath);
 		const isExist = fs.existsSync(workPath);
 		if (!isExist) {
 			console.log(`${chalk.red(workPath + "does not exist")}`);

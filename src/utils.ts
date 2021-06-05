@@ -116,7 +116,7 @@ export function getHashMap(root: string, devdir: string, proddir: string) {
 			[recordFileProdKey]: "",
 		};
 		if (!existDev) {
-			console.log(`${devPath} does not exist`);
+			//console.log(`${devPath} does not exist`);
 		} else {
 			const final = findHash(devPath);
 			if (final[1] !== 0) {
@@ -124,9 +124,9 @@ export function getHashMap(root: string, devdir: string, proddir: string) {
 			}
 		}
 		if (!existProd) {
-			console.log(`${prodPath} does not exist`);
+			//console.log(`${prodPath} does not exist`);
 		} else {
-			const final = findHash(devPath);
+			const final = findHash(prodPath);
 			if (final[1] !== 0) {
 				tmp[recordFileProdKey] = final[0];
 			}

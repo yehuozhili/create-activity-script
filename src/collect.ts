@@ -11,7 +11,8 @@ export const collect = async (
 	base: string,
 	devdir: string,
 	proddir: string,
-	output: string
+	output: string,
+	ignore: string
 ) => {
 	//先获取该目录下所有文件夹
 	let root = process.cwd();
@@ -27,7 +28,6 @@ export const collect = async (
 	// 遍历所有文件夹，获取查到对应目录的dev/pkgname/
 	const recordMap = getHashMap(root, devdir, proddir);
 
-	console.log(recordMap);
 	// 写入文件
 	if (output) {
 		const outPath = path.resolve(output);
@@ -36,7 +36,7 @@ export const collect = async (
 			console.log(`${outPath} doesn't exist`);
 			return;
 		} else {
-			const res = await wirteRecord(outPath, recordMap);
+			const res = await wirteRecord(outPath, recordMap, ignore);
 			if (res) {
 				console.log(
 					`successfully generate ${chalk.green(
@@ -47,7 +47,7 @@ export const collect = async (
 		}
 	} else {
 		const outPath = process.cwd();
-		const res = await wirteRecord(outPath, recordMap);
+		const res = await wirteRecord(outPath, recordMap, ignore);
 		if (res) {
 			console.log(
 				`successfully generate ${chalk.green(outPath)}/${chalk.green(
@@ -60,23 +60,28 @@ export const collect = async (
 
 const wirteRecord = async (
 	outPath: string,
-	recordMap: Record<string, RecordMapItemType>
+	recordMap: Record<string, RecordMapItemType>,
+	ignore: string
 ) => {
 	const origin = path.join(outPath, recordFileName);
 	const originExist = fs.existsSync(origin);
 	if (originExist) {
-		const choices = ["y", "n"];
-		let sign = "y";
-		const result = await inquirer.prompt({
-			name: "sign",
-			type: "list",
-			message: `${origin}  already exists , continue ?`,
-			choices,
-		});
-		sign = result.sign;
-		console.log(sign);
-		if (sign === "n") {
-			return false;
+		if (!ignore) {
+			const choices = ["y", "n"];
+			let sign = "y";
+			const result = await inquirer.prompt({
+				name: "sign",
+				type: "list",
+				message: `${origin}  already exists , continue ?`,
+				choices,
+			});
+			sign = result.sign;
+			console.log(sign);
+			if (sign === "n") {
+				return false;
+			} else {
+				fs.unlinkSync(origin);
+			}
 		} else {
 			fs.unlinkSync(origin);
 		}

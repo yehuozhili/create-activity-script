@@ -22,8 +22,15 @@ program
 	.option("-d, --dev <dev>", "collect dev dir name", "develop")
 	.option("-p, --prod <prod>", "collect dev dir name", "prod")
 	.option("-o, --out <out>", "output diff file")
+	.option("-i, --ignore <ignore>", "ignore inquire , always yes")
 	.action((options) => {
-		collect(options.base, options.dev, options.prod, options.out);
+		collect(
+			options.base,
+			options.dev,
+			options.prod,
+			options.out,
+			options.ignore
+		);
 	});
 
 program
@@ -34,18 +41,21 @@ program
 	.option("-d, --dev <dev>", "collect dev dir name", "develop")
 	.option("-p, --prod <prod>", "collect dev dir name", "prod")
 	.option("-o, --out <out>", "output diff file")
+	.option("-i, --ignore [ignore]", "ignore inquire , always yes")
 	.option(
 		"-m, --mode <mode>",
 		`${recordFileDevKey} or ${recordFileProdKey}`,
 		`${recordFileDevKey}`
 	)
 	.action((options) => {
+		console.log("mode", options.mode);
 		build(
 			options.base,
 			options.dev,
 			options.prod,
 			options.out,
-			options.mode
+			options.mode,
+			options.ignore
 		);
 	});
 
