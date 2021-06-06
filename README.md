@@ -69,4 +69,5 @@ Options:
 
 ### changelog
 
+-   1.0.3 去除模板中复制 gitignore
 -   1.0.2 build 与 collect 增加-i 可以一键忽略选择，全部继续 , 修复环境打包记录的 bug。

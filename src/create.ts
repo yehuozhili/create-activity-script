@@ -78,7 +78,7 @@ async function run(root: string, projectName: string, option: string) {
 	);
 	// 复制文件到项目目录
 
-	const gitIgnoreDir = path.join(templatePath, ".npmignore");
+	//const gitIgnoreDir = path.join(templatePath, ".npmignore");
 	const tempDir = path.join(root, "temp");
 	const templateDir = path.join(templatePath, `${targetTemplate}-template`);
 	// D:\project\create-activity-script\hello\node_modules\yh-cas-template\.npmignore
@@ -92,7 +92,7 @@ async function run(root: string, projectName: string, option: string) {
 		});
 
 		fs.copySync(tempDir, root);
-		fs.copyFileSync(gitIgnoreDir, root + "/.gitignore");
+		//	fs.copyFileSync(gitIgnoreDir, root + "/.gitignore");
 		deleteFolder(tempDir);
 	} else {
 		console.error(
