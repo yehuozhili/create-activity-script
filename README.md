@@ -67,8 +67,52 @@ Options:
   -h, --help
 ```
 
+### use with lerna
+
+-   结合 lerna 使用
+-   使用 lerna 初始化项目：
+
+```
+lerna init
+```
+
+-   创建项目
+
+```
+create-activity-script create -b packages packagea
+create-activity-script create -b packages packageb
+create-activity-script create -b packages packagec
+create-activity-script create -b packages packaged
+create-activity-script create -b packages packagee
+```
+
+-   依赖共享
+
+```
+lerna link convert
+```
+
+-   安装依赖
+
+```
+lerna bootstrap
+```
+
+-   生成 develop 产物
+
+```
+create-activity-script build  -b packages
+```
+
+-   生成 prodution 产物
+
+```
+create-activity-script build  -b packages -m  prod
+```
+
 ### changelog
 
+-   1.0.5 支持 lerna
 -   1.0.4 去除 create 中自动安装依赖
 -   1.0.3 去除模板中复制 gitignore
 -   1.0.2 build 与 collect 增加-i 可以一键忽略选择，全部继续 , 修复环境打包记录的 bug。

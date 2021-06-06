@@ -212,11 +212,22 @@ const buildFile = async (
 	// 先切进目录进行build
 	const willbuild = solution[1];
 	const r = root;
+	const cwd = process.cwd();
+	const lernaJson = path.resolve(cwd, "lerna.json");
+	const isLerna = fs.existsSync(lernaJson);
+	if (isLerna) {
+		console.log(
+			`${chalk.red(
+				"detect lerna.json , will use lerna exec replace npm build"
+			)}`
+		);
+	}
+
 	const promises: Promise<any>[] = [];
 	willbuild.forEach((v) => {
 		const workPath = path.resolve(r, v);
 		const script = mode === "dev" ? scriptDev : scriptProd;
-		promises.push(buildAction(workPath, script));
+		promises.push(buildAction(workPath, script, cwd, isLerna, v));
 	});
 	try {
 		await Promise.all(promises);

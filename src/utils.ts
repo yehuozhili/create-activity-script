@@ -34,12 +34,25 @@ export async function doAction(
 	});
 }
 
-export async function buildAction(root: string, script: string) {
+export async function buildAction(
+	root: string,
+	script: string,
+	cwd: string,
+	isLerna: boolean,
+	name: string
+) {
 	return new Promise((resolve) => {
-		const command = "npm run ";
-		const args = [script, "--loglevel", "error"];
-		const child = spawn(command, args, { stdio: "inherit", cwd: root });
-		child.on("close", resolve);
+		if (isLerna) {
+			const command = `lerna exec npm run `;
+			const args = [script, `--scope=${name}`, "--loglevel", "error"];
+			const child = spawn(command, args, { stdio: "inherit", cwd: cwd });
+			child.on("close", resolve);
+		} else {
+			const command = "npm run ";
+			const args = [script, "--loglevel", "error"];
+			const child = spawn(command, args, { stdio: "inherit", cwd: root });
+			child.on("close", resolve);
+		}
 	});
 }
 
