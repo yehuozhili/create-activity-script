@@ -139,8 +139,7 @@ async function run(root: string, projectName: string, option: string) {
 	// }
 	// await doAction(root, newDependencies);
 	// console.log(`${chalk.cyan("Installing succeed!")}`);
-	await doAction(root, template, "uninstall");
-
+	//  await doAction(root, template, "uninstall"); // 卸载也会把所有全部安装一遍
 	console.log(`🎉  Successfully created project ${projectName}.`);
 	console.log("👉  Get started with the following commands:");
 	if (option) {
